@@ -1,0 +1,62 @@
+diff --git clients/Makefile.am clients/Makefile.am
+index e142286..b1f88de 100644
+--- clients/Makefile.am
++++ clients/Makefile.am
+@@ -204,8 +204,11 @@ weston_info_LDADD = $(WESTON_INFO_LIBS)
+ weston_desktop_shell_SOURCES =			\
+ 	desktop-shell.c				\
+ 	desktop-shell-client-protocol.h		\
+-	desktop-shell-protocol.c
+-weston_desktop_shell_LDADD = libtoytoolkit.la
++	desktop-shell-protocol.c			\
++	../WLToolKit/HomeScreenFactory.cpp	\
++	../WLToolKit/HomeScreen.cpp
++weston_desktop_shell_CFLAGS = $(AM_CFLAGS) -I../WLToolKit
++weston_desktop_shell_LDADD = libtoytoolkit.la ../WLToolKit/libWLToolKit.la
+ 
+ weston_tablet_shell_SOURCES =			\
+ 	tablet-shell.c				\
+diff --git clients/desktop-shell.c clients/desktop-shell.c
+index 82fe9b0..673592c 100644
+--- clients/desktop-shell.c
++++ clients/desktop-shell.c
+@@ -44,6 +44,10 @@
+ 
+ #include "desktop-shell-client-protocol.h"
+ 
++#if 1
++#include "HomeScreenFactory.h"
++#endif
++
+ extern char **environ; /* defined by libc */
+ 
+ struct desktop {
+@@ -1260,6 +1264,9 @@ int main(int argc, char *argv[])
+ 	int config_fd;
+ 	struct output *output;
+ 	struct weston_config_section *s;
++#if 1
++	HomeScreenHandle hs_handle;
++#endif
+ 
+ 	desktop.unlock_task.run = unlock_dialog_finish;
+ 	wl_list_init(&desktop.outputs);
+@@ -1288,11 +1295,18 @@ int main(int argc, char *argv[])
+ 
+ 	grab_surface_create(&desktop);
+ 
++#if 1
++	hs_handle = HomeScreenCreate(desktop.display);
++#endif
++
+ 	signal(SIGCHLD, sigchild_handler);
+ 
+ 	display_run(desktop.display);
+ 
+ 	/* Cleanup */
++#if 1
++	HomeScreenDestroy(hs_handle);
++#endif
+ 	grab_surface_destroy(&desktop);
+ 	desktop_destroy_outputs(&desktop);
+ 	if (desktop.unlock_dialog)
